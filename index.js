@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     let selectedWord = '';
-    let guessedLetters = new Set(); // Usamos un Set para un seguimiento más eficiente
+    let guessedLetters = new Set();
     let remainingAttempts = 8;
     const wordContainer = document.getElementById('word-container');
     const hintElement = document.getElementById('hint');
@@ -50,13 +50,14 @@ document.addEventListener('DOMContentLoaded', () => {
             key.addEventListener('click', () => handleGuess(letter));
             keyboard.appendChild(key);
         });
+
+        // Agregamos el event listener para el teclado físico al inicio del juego
+        document.addEventListener('keydown', handleKeyPress);
     }
 
     function handleGuess(letter) {
-        // Normaliza la letra a minúscula
         letter = letter.toLowerCase();
         
-        // Evita procesar la misma letra más de una vez
         if (guessedLetters.has(letter) || remainingAttempts === 0) {
             return;
         }
@@ -75,7 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
             remainingAttempts--;
         }
         
-        // Deshabilitar la tecla virtual
         const keyElement = [...keyboard.children].find(key => key.textContent === letter);
         if (keyElement) {
             keyElement.classList.add('disabled');
@@ -99,20 +99,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function endGame() {
-        // Deshabilitar todas las teclas virtuales
         [...keyboard.children].forEach(key => {
             key.classList.add('disabled');
             key.removeEventListener('click', () => {});
         });
         restartButton.style.display = 'block';
         
-        // Remover el event listener del teclado físico al terminar
+        // Removemos el event listener del teclado físico al terminar
         document.removeEventListener('keydown', handleKeyPress);
     }
     
     function handleKeyPress(event) {
         const letter = event.key.toLowerCase();
-        // Verificar si la tecla es una letra del alfabeto
         if (letter.length === 1 && letter.match(/[a-z]/)) {
             handleGuess(letter);
         }
@@ -120,8 +118,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     restartButton.addEventListener('click', startGame);
     
-    // Agregamos el event listener para el teclado físico
-    document.addEventListener('keydown', handleKeyPress);
-
     startGame();
 });
