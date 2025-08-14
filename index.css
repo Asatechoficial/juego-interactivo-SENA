@@ -102,7 +102,7 @@ h1 {
     padding: 10px 20px;
     font-size: 1em;
     cursor: pointer;
-    background-color: #ff6b6b;
+    background-color: #feb47b;
     color: white;
     border: none;
     border-radius: 8px;
@@ -111,6 +111,6 @@ h1 {
 }
 
 #restart-button:hover {
-    background-color: #e74c3c;
+    background-color: #fca05a;
     transform: translateY(-2px);
 }
