@@ -1,23 +1,22 @@
 document.addEventListener('DOMContentLoaded', () => {
     const words = [
-    { word: 'ciberseguridad', hint: 'Disciplina que protege sistemas, redes y datos frente a ataques digitales.' },
-    { word: 'confidencialidad', hint: 'Principio que asegura que solo personas autorizadas puedan ver la información.' },
-    { word: 'integridad', hint: 'Garantiza que los datos no sean alterados sin autorización.' },
-    { word: 'disponibilidad', hint: 'Asegura que la información esté accesible cuando se necesite.' },
-    { word: 'riesgos', hint: 'Amenazas potenciales que pueden afectar la seguridad o funcionamiento de un sistema.' },
-    { word: 'cifrado', hint: 'Técnica que transforma la información para que no pueda ser leída sin una clave.' },
-    { word: 'vulnerabilidades', hint: 'Debilidades en un sistema que pueden ser explotadas por atacantes.' },
-    { word: 'resiliencia', hint: 'Capacidad de un sistema para recuperarse tras un ciberataque.' },
-    { word: 'informacion', hint: 'Recurso valioso que debe protegerse de accesos y alteraciones no autorizadas.' },
-    { word: 'protocolos', hint: 'Conjunto de reglas o procedimientos para actuar ante incidentes de seguridad.' },
-    { word: 'acceso', hint: 'Permiso o capacidad de entrar a un sistema o consultar datos.' },
-    { word: 'capacitacion', hint: 'Formación que recibe el personal para aplicar buenas prácticas de seguridad.' }
-];
-
+        { word: 'ciberseguridad', hint: 'La planificación de la información según este criterio es esencial para la protección de datos sensibles.' },
+        { word: 'confidencialidad', hint: 'La planificación de la información protege este aspecto de los datos.' },
+        { word: 'integridad', hint: 'La planificación de la información protege este aspecto de los datos.' },
+        { word: 'disponibilidad', hint: 'La planificación de la información protege este aspecto de los datos.' },
+        { word: 'riesgos', hint: 'La planificación de la información implica identificar y evaluar estos elementos potenciales.' },
+        { word: 'cifrado', hint: 'Una de las medidas de seguridad adecuadas es el... de datos sensibles.' },
+        { word: 'vulnerabilidades', hint: 'La planificación implica considerar las posibles... en los sistemas y procesos existentes.' },
+        { word: 'resiliencia', hint: 'La integración de criterios de ciberseguridad fortalece la... ante amenazas cibernéticas.' },
+        { word: 'informacion', hint: 'La planificación de la... según criterios de ciberseguridad es un proceso fundamental.' },
+        { word: 'protocolos', hint: 'La planificación también implica el diseño de... de respuesta ante incidentes.' },
+        { word: 'acceso', hint: 'La implementación de controles de... sólidos es una medida de protección.' },
+        { word: 'capacitacion', hint: 'Una medida de protección es la... del personal en prácticas de seguridad.' }
+    ];
 
     let selectedWord = '';
-    let currentGuess = [];
-    let remainingAttempts = 6; // Aumentamos los intentos para hacer el juego más sencillo
+    let guessedLetters = new Set(); // Usamos un Set para un seguimiento más eficiente
+    let remainingAttempts = 8;
     const wordContainer = document.getElementById('word-container');
     const hintElement = document.getElementById('hint');
     const keyboard = document.getElementById('keyboard');
@@ -27,10 +26,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function startGame() {
         const randomIndex = Math.floor(Math.random() * words.length);
         selectedWord = words[randomIndex].word;
-        hintElement.innerHTML = `Pista: ${words[randomIndex].hint}`; // Usar innerHTML para que reconozca los tags HTML si es necesario
-        currentGuess = Array(selectedWord.length).fill('');
+        hintElement.textContent = `Pista: ${words[randomIndex].hint}`;
+        guessedLetters.clear();
         remainingAttempts = 8;
         messageElement.textContent = '';
+        messageElement.style.color = '#ecf0f1';
         restartButton.style.display = 'none';
         wordContainer.innerHTML = '';
         keyboard.innerHTML = '';
@@ -42,8 +42,8 @@ document.addEventListener('DOMContentLoaded', () => {
             wordContainer.appendChild(letterBox);
         }
 
-        // Crear el teclado
-        'abcdefghijklmnñopqrstuvwxyz'.split('').forEach(letter => {
+        // Crear el teclado virtual
+        'abcdefghijklmnopqrstuvwxyz'.split('').forEach(letter => {
             const key = document.createElement('button');
             key.textContent = letter;
             key.classList.add('key');
@@ -53,12 +53,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleGuess(letter) {
-        if (remainingAttempts === 0) return;
+        // Normaliza la letra a minúscula
+        letter = letter.toLowerCase();
+        
+        // Evita procesar la misma letra más de una vez
+        if (guessedLetters.has(letter) || remainingAttempts === 0) {
+            return;
+        }
+
+        guessedLetters.add(letter);
 
         let found = false;
         for (let i = 0; i < selectedWord.length; i++) {
             if (selectedWord[i] === letter) {
-                currentGuess[i] = letter;
                 wordContainer.children[i].textContent = letter;
                 found = true;
             }
@@ -67,21 +74,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!found) {
             remainingAttempts--;
         }
-
-        // Deshabilitar la tecla
+        
+        // Deshabilitar la tecla virtual
         const keyElement = [...keyboard.children].find(key => key.textContent === letter);
         if (keyElement) {
             keyElement.classList.add('disabled');
-            keyElement.removeEventListener('click', handleGuess);
         }
 
         checkGameState();
     }
 
     function checkGameState() {
-        const guessString = currentGuess.join('');
+        const wordGuessed = [...wordContainer.children].every(box => box.textContent !== '');
 
-        if (guessString === selectedWord) {
+        if (wordGuessed) {
             messageElement.textContent = '¡Felicidades! ¡Has adivinado la palabra!';
             messageElement.style.color = '#2ecc71';
             endGame();
@@ -93,15 +99,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function endGame() {
-        // Deshabilitar todas las teclas
+        // Deshabilitar todas las teclas virtuales
         [...keyboard.children].forEach(key => {
             key.classList.add('disabled');
-            key.removeEventListener('click', handleGuess);
+            key.removeEventListener('click', () => {});
         });
         restartButton.style.display = 'block';
+        
+        // Remover el event listener del teclado físico al terminar
+        document.removeEventListener('keydown', handleKeyPress);
+    }
+    
+    function handleKeyPress(event) {
+        const letter = event.key.toLowerCase();
+        // Verificar si la tecla es una letra del alfabeto
+        if (letter.length === 1 && letter.match(/[a-z]/)) {
+            handleGuess(letter);
+        }
     }
 
     restartButton.addEventListener('click', startGame);
+    
+    // Agregamos el event listener para el teclado físico
+    document.addEventListener('keydown', handleKeyPress);
 
     startGame();
 });
